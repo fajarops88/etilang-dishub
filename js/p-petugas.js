@@ -163,7 +163,7 @@
       const kotak = h('div', { class: 'slot-foto', role: 'button', tabindex: 0, onclick: () => input.click(), onkeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } } }, isi, h('div', { class: 'label-slot' }, lbl), status, prog, input);
       input.addEventListener('change', async () => {
         const f = input.files[0]; if (!f) return;
-        try { const blob = await kompres(f); S.slot[i] = { blob, terunggah: false }; tampilSlot(i, URL.createObjectURL(blob), Math.round(blob.size / 1024) + ' KB'); }
+        try { const blob = await kompres(f); S.slot[i] = { blob, terunggah: false }; tampilSlot(i, URL.createObjectURL(blob), Math.round(blob.size / 1024) + ' KB'); mulaiLatar(); }
         catch (e) { ETL.toast(e.message || 'Foto gagal diproses.', 'galat'); }
         input.value = '';
       });
@@ -240,9 +240,9 @@
       (kasusLama.slot_foto || []).forEach((n) => { const i = n - 1; S.slot[i] = { tersimpan: true, terunggah: true }; tampilSlot(i, 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', '', true);
         ETL.api('foto.get', { id: S.id, urutan: n }).then((f) => { const im = slotEl[i].kotak.querySelector('img'); if (im) im.src = 'data:' + f.mime + ';base64,' + f.data; }).catch(() => {}); });
     } else if (!S.id) {
-      try { const t = ETL.simpan.get(KUNCI_DRAFT); if (t) { isiForm(JSON.parse(t)); ETL.toast('Isian terakhir dipulihkan (foto perlu diambil ulang).', 'info'); } } catch (e) {}
+      try { const t = ETL.simpan.get(KUNCI_DRAFT); if (t) { const dl = JSON.parse(t); if (dl._id) { S.id = dl._id; S.latar = true; } isiForm(dl); ETL.toast('Isian terakhir dipulihkan (foto perlu diambil ulang).', 'info'); } } catch (e) {}
     }
-    const autosimpan = ETL.debounce(() => { if (S.id) return; ETL.simpan.set(KUNCI_DRAFT, JSON.stringify(ambil())); }, 600);
+    const autosimpan = ETL.debounce(() => { if (S.id && !S.latar) return; ETL.simpan.set(KUNCI_DRAFT, JSON.stringify(Object.assign(ambil(), { _id: S.latar ? S.id : undefined }))); }, 600);
     el.addEventListener('input', autosimpan); el.addEventListener('change', autosimpan);
 
     function ambil() {
@@ -276,9 +276,35 @@
         if (!lanjut) return null;
         return simpanDraft(true);
       }
-      S.id = r.id; history.replaceState(null, '', '#/catat/' + encodeURIComponent(S.id)); ETL.simpan.del(KUNCI_DRAFT);
+      S.id = r.id; S.latar = false; history.replaceState(null, '', '#/catat/' + encodeURIComponent(S.id)); ETL.simpan.del(KUNCI_DRAFT);
       return S.id;
     }
+    // ── Unggah foto di latar belakang: begitu foto diambil dan isian dasar lengkap, draft dibuat diam-diam
+    // lalu foto diunggah satu per satu, sehingga saat tombol terbit ditekan tinggal menyimpan dan menerbitkan.
+    let latarJalan = null;
+    const adaFotoMenunggu = () => S.slot.some((x) => x && x.blob && !x.terunggah);
+    const dasarLatarSiap = () => F.nopol.value.trim().length >= 3 && !!F.jenis_kendaraan.value && !!F.id_jenis.value;
+    async function simpanSenyap() {
+      if (S.id) return S.id;
+      const r = await ETL.api('pelanggaran.simpan', Object.assign(ambil(), { konfirmasi_duplikat: false }), { ulang: false });
+      if (r.perlu_konfirmasi) { S.tahanLatar = true; return null; } // kemungkinan ganda: biarkan jalur terbit menampilkan konfirmasi
+      S.id = r.id; S.latar = true; return S.id;
+    }
+    function mulaiLatar() {
+      if (latarJalan || S.tahanLatar) return; // putaran yang sedang jalan akan mengambil foto baru
+      latarJalan = (async () => {
+        await null; // beri kesempatan penugasan latarJalan selesai sebelum penandanya dikosongkan
+        try {
+          while (adaFotoMenunggu() && dasarLatarSiap()) {
+            if (!S.id && !(await simpanSenyap())) break;
+            await unggahFoto();
+          }
+        } catch (e) { /* senyap: tombol simpan/terbit mengulang dan menampilkan galat bila masih gagal */ }
+        latarJalan = null;
+      })();
+    }
+    async function tungguLatar() { while (latarJalan) await latarJalan; }
+    el.addEventListener('change', () => { if (adaFotoMenunggu()) mulaiLatar(); });
     async function unggahFoto() {
       for (let i = 0; i < 4; i++) {
         const s = S.slot[i]; if (!s || s.terunggah || !s.blob) continue;
@@ -291,7 +317,7 @@
     function kunciTombol(b) { btnDraft.disabled = b; btnTerbit.disabled = b; }
     btnDraft.addEventListener('click', async () => {
       if (!periksa(false)) return; kunciTombol(true);
-      try { const id = await simpanDraft(); if (id) { await unggahFoto(); ETL.toast('Draft tersimpan.', 'ok'); } } catch (e) { ETL.toast(e.pesan || 'Gagal menyimpan.', 'galat'); }
+      try { await tungguLatar(); const id = await simpanDraft(); if (id) { await unggahFoto(); ETL.toast('Draft tersimpan.', 'ok'); } } catch (e) { ETL.toast(e.pesan || 'Gagal menyimpan.', 'galat'); }
       kunciTombol(false);
     });
     btnTerbit.addEventListener('click', async () => {
@@ -299,6 +325,7 @@
       const ya = await ETL.konfirmasi('Terbitkan surat penindakan?', 'Setelah terbit, data tidak dapat diubah oleh petugas dan nomor surat akan dibuat. Pastikan nopol, jenis pelanggaran, dan foto sudah benar.', 'Ya, terbitkan', 'btn-utama');
       if (!ya) return; kunciTombol(true); ETL.tombolMuat(btnTerbit, true, 'Memproses…');
       try {
+        await tungguLatar();
         const id = await simpanDraft(true); if (!id) throw { pesan: 'Dibatalkan.' };
         await unggahFoto();
         const r = await ETL.api('pelanggaran.terbitkan', { id }, { ulang: false });
