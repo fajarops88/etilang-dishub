@@ -4,7 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#1e2761">
-  <meta name="robots" content="noindex">
+  <meta name="description" content="E-Tilang Dishub Balikpapan: aplikasi pencatatan dan penerbitan surat penindakan pelanggaran kendaraan oleh Dinas Perhubungan Kota Balikpapan. Masyarakat dapat memeriksa keaslian surat dengan nomor surat dan nomor polisi.">
+  <meta name="robots" content="index, follow">
+  <meta name="application-name" content="E-Tilang">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="E-Tilang">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <title>E-Tilang Dishub Balikpapan</title>
   <link rel="preload" href="assets/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="vendor/leaflet.css">
@@ -15,20 +25,21 @@
   <noscript><p style="padding:2rem;font-family:sans-serif">Aplikasi ini membutuhkan JavaScript.</p></noscript>
   <div id="app" aria-live="polite"></div>
 
-  <script src="js/config.js"></script>
-  <script src="js/icons.js"></script>
-  <script src="js/util.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/charts.js"></script>
-  <script src="vendor/leaflet.js"></script>
-  <script src="vendor/qrcode.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/p-publik.js"></script>
-  <script src="js/p-petugas.js"></script>
-  <script src="js/p-kasus.js"></script>
-  <script src="js/p-laporan.js"></script>
-  <script src="js/p-admin.js"></script>
-  <script src="js/p-wa-crm.js"></script>
-  <script>ETL.mulai();</script>
+  <script defer src="js/config.js"></script>
+  <script defer src="js/icons.js"></script>
+  <script defer src="js/util.js"></script>
+  <script defer src="js/pwa.js"></script>
+  <script defer src="js/api.js"></script>
+  <script defer src="js/charts.js"></script>
+  <script defer src="vendor/leaflet.js"></script>
+  <script defer src="vendor/qrcode.js"></script>
+  <script defer src="js/app.js"></script>
+  <script defer src="js/p-publik.js"></script>
+  <script defer src="js/p-petugas.js"></script>
+  <script defer src="js/p-kasus.js"></script>
+  <script defer src="js/p-laporan.js"></script>
+  <script defer src="js/p-admin.js"></script>
+  <script defer src="js/p-wa-crm.js"></script>
+  <script>window.addEventListener('DOMContentLoaded', function () { ETL.mulai(); });</script>
 </body>
 </html>

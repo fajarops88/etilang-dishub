@@ -1,0 +1,24 @@
+{
+  "name": "E-Tilang Dishub Balikpapan",
+  "short_name": "E-Tilang",
+  "description": "Pencatatan dan penerbitan surat penindakan pelanggaran kendaraan, Dinas Perhubungan Kota Balikpapan.",
+  "lang": "id",
+  "dir": "ltr",
+  "start_url": "./#/beranda",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f5fb",
+  "theme_color": "#1e2761",
+  "categories": ["government", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Catat pelanggaran", "short_name": "Catat", "url": "./#/catat", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] },
+    { "name": "Cek status surat", "short_name": "Cek", "url": "./#/cek", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] }
+  ]
+}

@@ -43,14 +43,26 @@
   }
   ETL.logo = logo;
 
+  /** Kartu "Pasang di layar utama" + tombol muat ulang bila ada versi baru. null bila tidak relevan. */
+  function kartuPasang() {
+    const P = ETL.pwa; if (!P) return null;
+    const baru = P.versiBaru ? h('button', { class: 'btn btn-sekunder btn-kecil mt-2', onclick: () => P.muatUlang() }, 'Muat ulang ke versi baru') : null;
+    const st = P.status(); let isi;
+    if (st === 'terpasang') isi = h('div', { class: 'text-body-sm' }, 'Aplikasi sudah terpasang di perangkat ini.');
+    else if (st === 'bisa') isi = [h('div', { class: 'text-body-sm' }, 'Pasang aplikasi di layar utama agar terbuka seperti aplikasi biasa.'), h('button', { class: 'btn btn-primer btn-kecil mt-2', onclick: async () => { await P.pasang(); } }, 'Pasang di layar utama')];
+    else if (st === 'ios') isi = h('div', { class: 'text-body-sm' }, 'Untuk memasang: buka di Safari, ketuk tombol Bagikan, lalu pilih "Tambah ke Layar Utama".');
+    else isi = h('div', { class: 'text-body-sm' }, 'Untuk memasang: buka menu peramban (tiga titik), lalu pilih "Pasang aplikasi" atau "Tambahkan ke layar utama". Pastikan memakai Chrome.');
+    return h('div', { class: 'kartu', style: { boxShadow: 'none', background: 'var(--surface-low)' } }, h('div', { class: 'font-semibold text-primary mb-1' }, 'Aplikasi di layar utama'), isi, baru);
+  }
   function akunModal() {
     const p = ETL.sesi.profil();
     ETL.modal({ judul: 'Akun saya', isi: [
       h('div', { class: 'flex items-center gap-3' }, h('div', { class: 'avatar', style: { width: '48px', height: '48px', fontSize: '1rem' } }, ETL.inisial(p.nama)),
         h('div', null, h('div', { class: 'text-headline-sm text-primary' }, p.nama), h('div', { class: 'text-body-sm text-on-surface-variant' }, [p.jabatan, p.nip && 'NIP ' + p.nip].filter(Boolean).join(' • ')),
           h('span', { class: 'badge badge-peran mt-1' }, p.peran === 'Admin' ? 'Admin Sistem' : p.peran === 'Pimpinan' ? 'Pimpinan' : 'Petugas Lapangan'))),
-      h('div', { class: 'info-kotak' }, 'Sesi berlaku maksimal 6 jam. Jangan membagikan PIN Anda kepada siapa pun.')
-    ], tombol: [
+      h('div', { class: 'info-kotak' }, 'Sesi berlaku maksimal 6 jam. Jangan membagikan PIN Anda kepada siapa pun.'),
+      kartuPasang()
+    ].filter(Boolean), tombol: [
       { teks: 'Ganti PIN', kelas: 'btn-sekunder', onClick: () => { location.hash = '#/ganti-pin'; } },
       { teks: 'Keluar', kelas: 'btn-bahaya', onClick: async () => { await keluar(); } }
     ] });
