@@ -33,6 +33,8 @@
     ['Surat saya tidak ditemukan, apa yang harus dilakukan?', 'Periksa kembali nomor surat pada lembar fisik (termasuk garis miring dan angka nol di depan). Jika tetap tidak ditemukan, hubungi Dishub lewat tombol WhatsApp.']
   ];
   ETL.rute('/cek', { publik: true, judul: 'Cek Status Surat', render: async ({ el, query }) => {
+    const web = ETL.urlWebsite(query.no);
+    if (web) { location.replace(web); return; }
     const nomor = h('input', { class: 'input', id: 'in-nomor', placeholder: 'Contoh: 0012/ETL/DISHUB/X/2026', autocomplete: 'off', autocapitalize: 'characters', value: query.no || '' });
     const nopol = h('input', { class: 'input input-plat', id: 'in-nopol', placeholder: 'KT 8421 LQ', autocomplete: 'off', autocapitalize: 'characters', maxlength: 12 });
     const galat = h('div', { class: 'galat-teks', role: 'alert' }), hasil = h('div', { class: 'mt-4' });
@@ -56,8 +58,7 @@
     el.appendChild(h('div', null,
       h('header', { class: 'hero' }, h('div', { class: 'perisai-hero' }, ETL.ikon('perisai', 190)),
         h('div', { class: 'flex items-center justify-between px-4 py-3', style: { position: 'relative', maxWidth: '980px', margin: '0 auto' } },
-          h('div', { class: 'flex items-center gap-2' }, ETL.logo(36), h('div', null, h('div', { class: 'font-bold', style: { lineHeight: 1.1 } }, ETL_CONFIG.NAMA_APP), h('div', { style: { fontSize: '.72rem', color: '#bbc3ff' } }, 'Kota Balikpapan'))),
-          h('a', { href: '#/login', class: 'btn btn-sekunder btn-kecil' }, ETL.ikon('akun', 16), 'Login petugas')),
+          h('div', { class: 'flex items-center gap-2' }, ETL.logo(36), h('div', null, h('div', { class: 'font-bold', style: { lineHeight: 1.1 } }, ETL_CONFIG.NAMA_APP), h('div', { style: { fontSize: '.72rem', color: '#bbc3ff' } }, 'Kota Balikpapan')))),
         h('div', { class: 'px-4 pt-6 pb-16', style: { position: 'relative', maxWidth: '980px', margin: '0 auto' } },
           h('span', { class: 'badge', style: { background: 'rgba(255,255,255,.15)', color: '#fff' } }, 'Layanan transparansi publik'),
           h('h1', { class: 'text-headline-lg-mobile md:text-headline-lg mt-3', style: { maxWidth: '640px' } }, 'Cek status surat penindakan kendaraan'),
@@ -93,7 +94,7 @@
       h('div', { style: { maxWidth: '420px', margin: '0 auto', padding: '2.2rem 1rem 3rem' } },
         h('div', { class: 'flex flex-col items-center text-center gap-2 mb-5' }, ETL.logo(64), h('span', { class: 'badge badge-peran' }, 'Portal resmi Dishub'), h('h1', { class: 'text-headline-lg-mobile text-primary' }, 'Masuk ke ' + ETL_CONFIG.NAMA_APP),
           h('p', { class: 'text-body-md text-on-surface-variant' }, ETL_CONFIG.NAMA_INSTANSI + ' — penindakan pelanggaran lalu lintas dan angkutan jalan')),
-        form, h('div', { class: 'text-center mt-4' }, h('a', { href: '#/cek', class: 'btn btn-hantu btn-kecil' }, ETL.ikon('cari', 16), 'Cek status surat (untuk warga)')))));
+        form)));
     setTimeout(() => user.focus(), 100);
   } });
 

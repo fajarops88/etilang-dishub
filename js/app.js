@@ -12,6 +12,15 @@
   };
   const beranda = () => { const p = ETL.sesi.profil(); return p && p.peran === 'Petugas' ? '#/beranda' : '#/dashboard'; };
   ETL.beranda = beranda;
+  const mandiri = () => { try { return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true; } catch (e) { return false; } };
+  // Alamat cek status di website (kosong bila WEBSITE_URL tidak diisi). Nomor surat (bila ada) ikut diisikan.
+  ETL.urlWebsite = (nomor) => {
+    const b = String(ETL_CONFIG.WEBSITE_URL || '').replace(/\/+$/, '');
+    if (!/^https:\/\//.test(b)) return '';
+    return nomor ? b + '/#/cek-status/surat/' + encodeURIComponent(nomor) : b + '/';
+  };
+  // Tujuan bagi yang belum masuk: aplikasi terpasang -> login; peramban biasa -> website (atau halaman cek lama bila tak diatur)
+  const awalTamu = () => (mandiri() ? '#/login' : '#/cek');
   ETL.pergi = (hash) => { if (location.hash === hash) ETL.rutekan(); else location.hash = hash; };
   ETL.href = (...bagian) => '#/' + bagian.map((b) => encodeURIComponent(b)).join('/');
 
@@ -112,8 +121,8 @@
     let r = null, param = {};
     for (const x of RUTE) { const m = x.re.exec(jalur); if (m) { r = x; x.nama.forEach((n, i) => { param[n] = decodeURIComponent(m[i + 1]); }); break; } }
     const masuk = ETL.sesi.ada(), p = ETL.sesi.profil();
-    if (jalur === '/') { location.replace(masuk ? beranda() : '#/cek'); return; }
-    if (!r) { location.replace(masuk ? beranda() : '#/cek'); return; }
+    if (jalur === '/') { location.replace(masuk ? beranda() : awalTamu()); return; }
+    if (!r) { location.replace(masuk ? beranda() : awalTamu()); return; }
     if (!r.publik) {
       if (!masuk) { location.replace('#/login'); return; }
       if (p.wajib_ganti_pin && jalur !== '/ganti-pin') { location.replace('#/ganti-pin'); return; }

@@ -353,7 +353,7 @@
     const k = det.kasus, ins = det.instansi, p = ETL.sesi.profil();
     ETL.kosong(el);
     if (k.status === 'Draft') { el.appendChild(h('div', { class: 'peringatan' }, 'Kasus ini masih draft dan belum memiliki surat.', h('a', { href: ETL.href('catat', k.id), class: 'btn btn-utama btn-kecil ml-2' }, 'Lanjutkan draft'))); return; }
-    const urlCek = (ins.url_cek || (location.origin + location.pathname + '#/cek')).replace(/\?.*$/, '') + '?no=' + encodeURIComponent(k.nomor_surat);
+    const urlCek = ETL.urlWebsite(k.nomor_surat) || ((ins.url_cek || (location.origin + location.pathname + '#/cek')).replace(/\?.*$/, '') + '?no=' + encodeURIComponent(k.nomor_surat));
     const batal = k.status === 'Dibatalkan';
     const fotoGrid = h('div', { class: 'foto-grid' });
     const baris = (a, b) => h('div', { class: 'baris' }, h('b', null, a), h('span', null, b || '–'));

@@ -2,7 +2,7 @@
  * Tujuan: aplikasi dapat dipasang dan kerangkanya (HTML/CSS/JS/font/ikon) terbuka cepat, bahkan saat sinyal lemah.
  * TIDAK pernah menyimpan panggilan API (alamat Apps Script, lintas-origin) maupun foto/data kasus.
  * Setiap rilis: naikkan VERSI agar cache lama dibuang. */
-const VERSI = 'etl-v1.1.0';
+const VERSI = 'etl-v1.2.0';
 const CACHE = VERSI + '-shell';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest',
