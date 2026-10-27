@@ -123,13 +123,30 @@
     const blokUji = h('div', { class: 'kartu', style: { display: 'none', background: '#fff7ee', boxShadow: 'none', border: '1px solid #f2c48f' } },
       h('div', { class: 'font-semibold text-primary mb-2' }, 'Pemeriksaan bukti uji fisik'), h('div', { class: 'grid gap-3' }, medan('Nomor bukti uji', F.no_bukti_uji, null, { wajib: true }), medan('Masa berlaku', F.masa_berlaku_uji, null, { wajib: true }),
         h('div', { class: 'bantuan' }, 'Ketik sesuai kartu/stiker fisik. Foto bukti uji (foto ke-3) wajib.')));
+    // sanksi yang dikenakan: pilih satu atau lebih ("dan/atau")
+    const blokSanksi = h('div', { class: 'kartu', style: { display: 'none', boxShadow: 'none', border: '1px solid var(--outline-variant, #c8c5d0)' } });
+    const pilihSanksi = new Set();
+    function gambarSanksi(j) {
+      ETL.kosong(blokSanksi);
+      const opsi = (j && j.opsi) || [];
+      if (!opsi.length) { blokSanksi.style.display = 'none'; pilihSanksi.clear(); return; }
+      blokSanksi.style.display = 'block';
+      [...pilihSanksi].forEach((x) => { if (opsi.indexOf(x) < 0) pilihSanksi.delete(x); });
+      blokSanksi.appendChild(h('div', { class: 'font-semibold text-primary mb-1' }, 'Sanksi yang dikenakan', h('span', { class: 'wajib' }, ' *')));
+      blokSanksi.appendChild(h('div', { class: 'bantuan mb-2' }, 'Pilih satu atau lebih (dan/atau) sesuai tindakan yang dilakukan di lapangan.'));
+      opsi.forEach((o) => {
+        const cb = h('input', { type: 'checkbox', checked: pilihSanksi.has(o) });
+        cb.addEventListener('change', () => { cb.checked ? pilihSanksi.add(o) : pilihSanksi.delete(o); el.dispatchEvent(new Event('change', { bubbles: true })); });
+        blokSanksi.appendChild(h('label', { class: 'pilihan' }, cb, h('span', null, o)));
+      });
+    }
     function jenisBerubah() {
-      const j = S.jenis.find((x) => x.id === F.id_jenis.value); ETL.kosong(infoJenis);
+      const j = S.jenis.find((x) => x.id === F.id_jenis.value); ETL.kosong(infoJenis); gambarSanksi(j);
       if (!j) { infoJenis.style.display = 'none'; blokUji.style.display = 'none'; ubahLabelFoto(false); return; }
       infoJenis.style.display = 'block';
       infoJenis.appendChild(h('div', { class: 'flex justify-between gap-2 items-center' }, h('span', { class: 'text-label-md text-on-surface-variant' }, 'Dasar hukum & ketentuan'), h('span', { class: 'badge badge-peran' }, 'Perda 7/2022')));
       infoJenis.appendChild(h('div', { class: 'font-semibold text-primary mt-1' }, j.pasal_perda));
-      infoJenis.appendChild(h('div', { class: 'text-body-sm text-on-surface-variant mt-1' }, j.sanksi ? 'Sanksi: ' + j.sanksi : 'Sanksi mengikuti ketentuan Perda (belum diisi admin).'));
+      infoJenis.appendChild(h('div', { class: 'text-body-sm text-on-surface-variant mt-1' }, j.sanksi ? 'Dasar sanksi: ' + j.sanksi : 'Sanksi mengikuti ketentuan Perda (belum diisi admin).'));
       blokUji.style.display = j.perlu_bukti_uji === 'YA' ? 'block' : 'none'; ubahLabelFoto(j.perlu_bukti_uji === 'YA');
     }
     F.id_jenis.addEventListener('change', jenisBerubah);
@@ -187,7 +204,7 @@
         medan('Jenis kendaraan', F.jenis_kendaraan, null, { wajib: true }), medan('Merek & warna', F.merek_warna, null, { opsi: 'opsional' }), medan('Nama pengemudi / pemilik', F.nama_pemilik, null, { opsi: 'opsional' }),
         adaNotif ? h('div', { class: 'kartu', style: { background: 'var(--surface-low)', boxShadow: 'none', display: 'grid', gap: '.6rem' } }, medan('Nomor WhatsApp pelanggar', F.no_wa, null, { opsi: 'opsional' }),
           h('label', { class: 'pilihan' }, F.izin_notif, h('span', null, 'Pelanggar menyetujui menerima pemberitahuan status surat lewat WhatsApp (dapat berhenti dengan membalas STOP).'))) : null),
-      bagian('02', 'Jenis pelanggaran & pasal Perda', medan('Jenis pelanggaran', F.id_jenis, null, { wajib: true }), infoJenis, blokUji),
+      bagian('02', 'Jenis pelanggaran & pasal Perda', medan('Jenis pelanggaran', F.id_jenis, null, { wajib: true }), infoJenis, blokSanksi, blokUji),
       bagian('03', 'Bukti foto lapangan', h('div', { class: 'flex justify-between text-body-sm text-on-surface-variant' }, h('span', null, 'Minimal 2 foto, maksimal 4'), h('span', null, 'Dikompres otomatis (≈150–300 KB)')), gridFoto),
       bagian('04', 'Lokasi penindakan', h('div', { class: 'flex items-center justify-between gap-2 flex-wrap' }, btnGps, infoGps), petaEl,
         medan('Nama jalan / patokan', F.lokasi_teks, null, { wajib: true }), medan('Wilayah', F.wilayah, null, { opsi: 'opsional' })),
@@ -214,6 +231,7 @@
       ['jenis_kendaraan', 'id_jenis', 'wilayah'].forEach((k) => { if (d[k]) F[k].value = d[k]; });
       F.uraian.value = d.uraian || ''; hitung.textContent = F.uraian.value.length + ' / 600'; F.izin_notif.checked = d.izin_notif === 'YA';
       if (d.lat !== '' && d.lat !== undefined && d.lat !== null) { S.lat = Number(d.lat); S.lng = Number(d.lng); infoGps.textContent = 'Titik: ' + S.lat + ', ' + S.lng; }
+      pilihSanksi.clear(); String(d.sanksi_dikenakan || '').split('|').filter(Boolean).forEach((x) => pilihSanksi.add(x));
       jenisBerubah();
     };
     if (kasusLama) {
@@ -228,7 +246,7 @@
 
     function ambil() {
       return { nopol: F.nopol.value, jenis_kendaraan: F.jenis_kendaraan.value, merek_warna: F.merek_warna.value, nama_pemilik: F.nama_pemilik.value, no_wa: adaNotif ? F.no_wa.value : '',
-        izin_notif: adaNotif && F.izin_notif.checked ? 'YA' : 'TIDAK', id_jenis: F.id_jenis.value, no_bukti_uji: F.no_bukti_uji.value, masa_berlaku_uji: F.masa_berlaku_uji.value,
+        izin_notif: adaNotif && F.izin_notif.checked ? 'YA' : 'TIDAK', id_jenis: F.id_jenis.value, sanksi_dikenakan: [...pilihSanksi].join('|'), no_bukti_uji: F.no_bukti_uji.value, masa_berlaku_uji: F.masa_berlaku_uji.value,
         lokasi_teks: F.lokasi_teks.value, wilayah: F.wilayah.value, lat: S.lat, lng: S.lng, uraian: F.uraian.value };
     }
     function tandai(f, salah) { f.classList.toggle('salah', !!salah); }
@@ -238,6 +256,8 @@
       if (!F.jenis_kendaraan.value) { g.push('Pilih jenis kendaraan.'); tandai(F.jenis_kendaraan, 1); }
       if (!F.id_jenis.value) { g.push('Pilih jenis pelanggaran.'); tandai(F.id_jenis, 1); }
       if (penuh) {
+        const jn = S.jenis.find((x) => x.id === F.id_jenis.value);
+        if (jn && jn.opsi && jn.opsi.length && !pilihSanksi.size) g.push('Pilih sanksi yang dikenakan.');
         const jumlah = S.slot.filter(Boolean).length;
         if (jumlah < 2 || !S.slot[0] || !S.slot[1]) g.push('Ambil foto plat depan dan belakang (minimal 2 foto).');
         if (ujiWajib) { if (!F.no_bukti_uji.value.trim()) { g.push('Isi nomor bukti uji.'); tandai(F.no_bukti_uji, 1); } if (!F.masa_berlaku_uji.value) { g.push('Isi masa berlaku bukti uji.'); tandai(F.masa_berlaku_uji, 1); } if (!S.slot[2]) g.push('Ambil foto bukti uji (foto ke-3).'); }
@@ -317,7 +337,7 @@
       h('div', { class: 'blok' }, h('div', { class: 'blok-judul' }, 'Identitas kendaraan'),
         h('div', { style: { background: '#141a4a', color: '#fff', padding: '8px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }, h('span', { style: { fontSize: '22px', fontWeight: 800, letterSpacing: '.12em' } }, ETL.formatNopol(k.nopol)), h('span', { style: { fontSize: '11px', background: '#fff', color: '#141a4a', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 } }, (k.jenis_kendaraan || '').toUpperCase())),
         baris('Merek / warna', k.merek_warna), baris('Pengemudi / pemilik', k.nama_pemilik), k.no_bukti_uji ? baris('Bukti uji', k.no_bukti_uji + (k.masa_berlaku_uji ? ' (berlaku s.d. ' + ETL.tgl(k.masa_berlaku_uji) + ')' : '')) : null),
-      h('div', { class: 'blok' }, h('div', { class: 'blok-judul' }, 'Pelanggaran & dasar hukum'), baris('Pelanggaran', k.nama_jenis), baris('Dasar hukum', k.pasal_perda), baris('Sanksi / tindakan', k.sanksi || 'Sesuai ketentuan Perda'), k.uraian ? baris('Uraian', k.uraian) : null),
+      h('div', { class: 'blok' }, h('div', { class: 'blok-judul' }, 'Pelanggaran & dasar hukum'), baris('Pelanggaran', k.nama_jenis), baris('Dasar hukum', k.pasal_perda), baris('Sanksi dikenakan', String(k.sanksi_dikenakan || '').split('|').filter(Boolean).join('; ') || 'Sesuai ketentuan Perda'), k.sanksi ? baris('Dasar sanksi', k.sanksi) : null, k.uraian ? baris('Uraian', k.uraian) : null),
       h('div', { class: 'blok' }, h('div', { class: 'blok-judul' }, 'Dokumentasi bukti (' + (k.jumlah_foto || 0) + ' foto)'), fotoGrid),
       h('div', { class: 'ttd' }, h('div', null, h('div', { style: { fontSize: '11px' } }, 'Penerima surat'), h('div', { class: 'garis-ttd' }), h('div', { style: { fontSize: '11px' } }, k.nama_pemilik || '(nama & tanda tangan)')),
         h('div', null, ETL.qrSvg(urlCek, 112), h('div', { style: { fontSize: '9px' } }, 'Pindai untuk cek status')),

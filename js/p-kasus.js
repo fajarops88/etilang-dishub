@@ -76,7 +76,7 @@
       h('a', { href: '#/kasus', class: 'text-label-lg flex items-center gap-1', style: { color: 'var(--primary-c)' } }, ETL.ikon('kiri', 16), 'Kembali'),
       h('section', { class: 'kartu reveal' }, h('div', { class: 'flex items-start justify-between gap-3 flex-wrap' }, h('div', null, ETL.plat(k.nopol, 'plat-besar'), h('div', { class: 'text-body-sm text-on-surface-variant mt-2' }, k.nomor_surat || k.id)), ETL.lencana(k.status)),
         k.status === 'Dibatalkan' ? h('div', { class: 'bahaya-kotak mt-3' }, h('b', null, 'Dibatalkan: '), k.alasan_batal) : null, h('div', { class: 'mt-3' }, aksi)),
-      h('section', { class: 'kartu reveal grid md:grid-cols-2 gap-x-6' }, h('div', null, h('div', { class: 'bagian-nomor' }, 'Pelanggaran'), baris('Jenis', k.nama_jenis), baris('Dasar', k.pasal_perda), baris('Sanksi', k.sanksi || 'Sesuai Perda'), baris('Dicatat', ETL.waktu(k.waktu, true)), baris('Terbit', k.tgl_terbit ? ETL.waktu(k.tgl_terbit, true) : '–')),
+      h('section', { class: 'kartu reveal grid md:grid-cols-2 gap-x-6' }, h('div', null, h('div', { class: 'bagian-nomor' }, 'Pelanggaran'), baris('Jenis', k.nama_jenis), baris('Dasar', k.pasal_perda), baris('Sanksi dikenakan', String(k.sanksi_dikenakan || '').split('|').filter(Boolean).join('; ') || 'Sesuai Perda'), k.sanksi ? baris('Dasar sanksi', k.sanksi) : null, baris('Dicatat', ETL.waktu(k.waktu, true)), baris('Terbit', k.tgl_terbit ? ETL.waktu(k.tgl_terbit, true) : '–')),
         h('div', null, h('div', { class: 'bagian-nomor' }, 'Kendaraan & lokasi'), baris('Jenis kendaraan', k.jenis_kendaraan), baris('Merek / warna', k.merek_warna), baris('Pengemudi / pemilik', k.nama_pemilik), baris('Lokasi', [k.lokasi_teks, k.wilayah].filter(Boolean).join(', ')), baris('Petugas', k.petugas.nama + (k.petugas.nip ? ' (NIP ' + k.petugas.nip + ')' : '')), k.no_bukti_uji ? baris('Bukti uji', k.no_bukti_uji + (k.masa_berlaku_uji ? ' • s.d. ' + ETL.tgl(k.masa_berlaku_uji) : '')) : null)),
       k.uraian ? h('section', { class: 'kartu reveal' }, h('div', { class: 'bagian-nomor' }, 'Uraian'), h('p', { class: 'text-body-lg mt-1' }, k.uraian)) : null,
       h('section', { class: 'kartu reveal' }, h('div', { class: 'bagian-nomor' }, 'Foto bukti (' + k.jumlah_foto + ')'), h('div', { class: 'mt-2' }, fotoWadah)),
@@ -104,11 +104,20 @@
       merek_warna: h('input', { class: 'input', value: k.merek_warna || '' }), nama_pemilik: h('input', { class: 'input', value: k.nama_pemilik || '' }), id_jenis: h('select', { class: 'select' }, m.jenis.map((j) => h('option', { value: j.id, selected: j.id === k.id_jenis }, j.uraian))),
       lokasi_teks: h('input', { class: 'input', value: k.lokasi_teks || '' }), wilayah: h('select', { class: 'select' }, h('option', { value: '' }, '–'), m.wilayah.map((w) => h('option', { value: w, selected: w === k.wilayah }, w))), uraian: h('textarea', { class: 'textarea' }) };
     F.uraian.value = k.uraian || ''; const alasan = h('textarea', { class: 'textarea', placeholder: 'Alasan koreksi (minimal 10 karakter)', maxlength: 400 });
+    const pilih = new Set(String(k.sanksi_dikenakan || '').split('|').filter(Boolean)), blokS = h('div', { class: 'grid gap-1' });
+    const gambarS = () => {
+      ETL.kosong(blokS); const j = m.jenis.find((x) => x.id === F.id_jenis.value), opsi = (j && j.opsi) || [];
+      [...pilih].forEach((x) => { if (opsi.indexOf(x) < 0) pilih.delete(x); });
+      opsi.forEach((o) => { const cb = h('input', { type: 'checkbox', checked: pilih.has(o) }); cb.addEventListener('change', () => { cb.checked ? pilih.add(o) : pilih.delete(o); }); blokS.appendChild(h('label', { class: 'pilihan' }, cb, h('span', null, o))); });
+      if (!opsi.length) blokS.appendChild(h('div', { class: 'bantuan' }, 'Jenis ini tidak memiliki pilihan sanksi.'));
+    };
+    F.id_jenis.addEventListener('change', () => { pilih.clear(); gambarS(); }); gambarS();
     const awal = { nopol: k.nopol, jenis_kendaraan: k.jenis_kendaraan, merek_warna: k.merek_warna || '', nama_pemilik: k.nama_pemilik || '', id_jenis: k.id_jenis, lokasi_teks: k.lokasi_teks || '', wilayah: k.wilayah || '', uraian: k.uraian || '' };
     ETL.modal({ judul: 'Koreksi data kasus', lebar: 'lebar', isi: [h('div', { class: 'info-kotak' }, 'Perubahan dicatat di log audit beserta nilai lama dan baru. Hanya bidang yang berubah yang dikirim.'),
-      h('div', { class: 'grid gap-3 md:grid-cols-2' }, medan('Nopol', F.nopol), medan('Jenis kendaraan', F.jenis_kendaraan), medan('Merek / warna', F.merek_warna), medan('Pengemudi / pemilik', F.nama_pemilik), medan('Jenis pelanggaran', F.id_jenis), medan('Wilayah', F.wilayah)), medan('Lokasi', F.lokasi_teks), medan('Uraian', F.uraian), medan('Alasan koreksi', alasan, null, { wajib: true })],
+      h('div', { class: 'grid gap-3 md:grid-cols-2' }, medan('Nopol', F.nopol), medan('Jenis kendaraan', F.jenis_kendaraan), medan('Merek / warna', F.merek_warna), medan('Pengemudi / pemilik', F.nama_pemilik), medan('Jenis pelanggaran', F.id_jenis), medan('Wilayah', F.wilayah)), medan('Sanksi yang dikenakan', blokS), medan('Lokasi', F.lokasi_teks), medan('Uraian', F.uraian), medan('Alasan koreksi', alasan, null, { wajib: true })],
       tombol: [{ teks: 'Batal', kelas: 'btn-sekunder' }, { teks: 'Simpan koreksi', kelas: 'btn-primer', onClick: async () => {
         const perubahan = {}; Object.keys(F).forEach((c) => { const v = F[c].value, a = c === 'nopol' ? ETL.formatNopol(awal.nopol) : awal[c]; if (String(v) !== String(a)) perubahan[c] = v; });
+        const sj = [...pilih].join('|'); if (sj !== String(k.sanksi_dikenakan || '')) perubahan.sanksi_dikenakan = sj;
         if (!Object.keys(perubahan).length) { ETL.toast('Tidak ada perubahan.', 'galat'); return false; }
         if (alasan.value.trim().length < 10) { alasan.classList.add('salah'); ETL.toast('Alasan minimal 10 karakter.', 'galat'); return false; }
         try { await ETL.api('kasus.koreksi', { id: k.id, perubahan, alasan: alasan.value }, { ulang: false }); ETL.toast('Koreksi tersimpan.', 'ok'); selesai(); } catch (e) { ETL.toast(e.pesan || 'Gagal.', 'galat'); return false; } } }] });
