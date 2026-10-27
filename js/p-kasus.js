@@ -100,8 +100,9 @@
   }
   async function modalKoreksi(k, selesai) {
     let m; try { m = await ETL.apiSwr('master.jenis', {}, () => {}); } catch (e) { ETL.toast('Gagal memuat master.', 'galat'); return; }
+    const labelJenis = (j) => { const p = String(j.pasal_perda || '').replace(/^Perda Balikpapan 7\/2022\s*/, ''), u = String(j.uraian || ''); return (p ? p + ' – ' : '') + (u.length > 60 ? u.slice(0, 59) + '…' : u); };
     const F = { nopol: h('input', { class: 'input', value: ETL.formatNopol(k.nopol) }), jenis_kendaraan: h('select', { class: 'select' }, m.jenis_kendaraan.map((j) => h('option', { value: j, selected: j === k.jenis_kendaraan }, j))),
-      merek_warna: h('input', { class: 'input', value: k.merek_warna || '' }), nama_pemilik: h('input', { class: 'input', value: k.nama_pemilik || '' }), id_jenis: h('select', { class: 'select' }, m.jenis.map((j) => h('option', { value: j.id, selected: j.id === k.id_jenis }, j.uraian))),
+      merek_warna: h('input', { class: 'input', value: k.merek_warna || '' }), nama_pemilik: h('input', { class: 'input', value: k.nama_pemilik || '' }), id_jenis: h('select', { class: 'select' }, m.jenis.map((j) => h('option', { value: j.id, selected: j.id === k.id_jenis, title: j.uraian }, labelJenis(j)))),
       lokasi_teks: h('input', { class: 'input', value: k.lokasi_teks || '' }), wilayah: h('select', { class: 'select' }, h('option', { value: '' }, '–'), m.wilayah.map((w) => h('option', { value: w, selected: w === k.wilayah }, w))), uraian: h('textarea', { class: 'textarea' }) };
     F.uraian.value = k.uraian || ''; const alasan = h('textarea', { class: 'textarea', placeholder: 'Alasan koreksi (minimal 10 karakter)', maxlength: 400 });
     const pilih = new Set(String(k.sanksi_dikenakan || '').split('|').filter(Boolean)), blokS = h('div', { class: 'grid gap-1' });
