@@ -20,7 +20,7 @@
       const selJ = h('select', { class: 'select', 'aria-label': 'Jenis pelanggaran' }, h('option', { value: '' }, 'Semua jenis')), selW = h('select', { class: 'select', 'aria-label': 'Wilayah' }, h('option', { value: '' }, 'Semua wilayah'));
       const d1 = h('input', { class: 'input', type: 'date', 'aria-label': 'Dari tanggal' }), d2 = h('input', { class: 'input', type: 'date', 'aria-label': 'Sampai tanggal' });
       const cb = h('input', { type: 'checkbox' });
-      ETL.apiSwr('master.jenis', {}, (m) => { master = m; ETL.kosong(selJ); selJ.appendChild(h('option', { value: '' }, 'Semua jenis')); m.jenis.forEach((j) => selJ.appendChild(h('option', { value: j.id }, j.uraian))); ETL.kosong(selW); selW.appendChild(h('option', { value: '' }, 'Semua wilayah')); m.wilayah.forEach((w) => selW.appendChild(h('option', { value: w }, w))); }).catch(() => {});
+      ETL.apiSwr('master.jenis', {}, (m) => { master = m; ETL.kosong(selJ); selJ.appendChild(h('option', { value: '' }, 'Semua jenis')); m.jenis.forEach((j) => selJ.appendChild(h('option', { value: j.id, title: j.uraian }, ETL.labelJenis(j)))); ETL.kosong(selW); selW.appendChild(h('option', { value: '' }, 'Semua wilayah')); m.wilayah.forEach((w) => selW.appendChild(h('option', { value: w }, w))); }).catch(() => {});
       [[selJ, 'id_jenis'], [selW, 'wilayah'], [d1, 'dari'], [d2, 'sampai']].forEach(([n, k]) => n.addEventListener('change', () => { F[k] = n.value; st.hal = 1; muat(); }));
       cb.addEventListener('change', () => { F.semua = cb.checked; st.hal = 1; muat(); });
       filterLanjut.append(selJ, selW, d1, d2, h('label', { class: 'pilihan', style: { alignItems: 'center' } }, cb, h('span', { class: 'text-body-sm' }, 'Cari semua arsip')));
@@ -100,7 +100,7 @@
   }
   async function modalKoreksi(k, selesai) {
     let m; try { m = await ETL.apiSwr('master.jenis', {}, () => {}); } catch (e) { ETL.toast('Gagal memuat master.', 'galat'); return; }
-    const labelJenis = (j) => { const p = String(j.pasal_perda || '').replace(/^Perda Balikpapan 7\/2022\s*/, ''), u = String(j.uraian || ''); return (p ? p + ' – ' : '') + (u.length > 60 ? u.slice(0, 59) + '…' : u); };
+    const labelJenis = ETL.labelJenis;
     const F = { nopol: h('input', { class: 'input', value: ETL.formatNopol(k.nopol) }), jenis_kendaraan: h('select', { class: 'select' }, m.jenis_kendaraan.map((j) => h('option', { value: j, selected: j === k.jenis_kendaraan }, j))),
       merek_warna: h('input', { class: 'input', value: k.merek_warna || '' }), nama_pemilik: h('input', { class: 'input', value: k.nama_pemilik || '' }), id_jenis: h('select', { class: 'select' }, m.jenis.map((j) => h('option', { value: j.id, selected: j.id === k.id_jenis, title: j.uraian }, labelJenis(j)))),
       lokasi_teks: h('input', { class: 'input', value: k.lokasi_teks || '' }), wilayah: h('select', { class: 'select' }, h('option', { value: '' }, '–'), m.wilayah.map((w) => h('option', { value: w, selected: w === k.wilayah }, w))), uraian: h('textarea', { class: 'textarea' }) };

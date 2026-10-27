@@ -161,4 +161,7 @@
 
   Object.assign(ETL, { h, kosong, ikon, simpan, lokal, tgl, waktu, bulanLabel, angka, formatNopol, plat, lencana, inisial, debounce, kurangGerak, toast, modal, konfirmasi,
     hitungNaik, munculSaatTergulir, skeleton, kosongState, salin, unduhCsv, parseWaktu, BLN_PANJANG });
+  /** Label pendek untuk dropdown jenis pelanggaran: pasal ringkas + awal uraian (teks lengkap di atribut title). */
+  ETL.labelJenis = (j) => { const p = String(j.pasal_perda || '').replace(/^Perda Balikpapan 7\/2022\s*/, '').replace(/ ayat \((\d+)\)/g, '($1)').replace(/ huruf /g, '').replace(/ dan /g, ','), u = String(j.uraian || ''); return (p ? p + ' – ' : '') + (u.length > 42 ? u.slice(0, 41) + '…' : u); };
+
 })();

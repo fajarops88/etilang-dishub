@@ -104,7 +104,7 @@
     kolom('no_wa', 'input', { placeholder: '0812xxxxxxxx', inputmode: 'tel', maxlength: 20 });
     F.izin_notif = h('input', { type: 'checkbox', id: 'f-izin' });
     F.id_jenis = h('select', { class: 'select', id: 'f-jenis' }, h('option', { value: '' }, 'Pilih jenis pelanggaran'));
-    const labelJenis = (j) => { const p = String(j.pasal_perda || '').replace(/^Perda Balikpapan 7\/2022\s*/, ''), u = String(j.uraian || ''); return (p ? p + ' – ' : '') + (u.length > 60 ? u.slice(0, 59) + '…' : u); };
+    const labelJenis = ETL.labelJenis;
     const kat = {}; master.jenis.forEach((j) => { (kat[j.kategori] = kat[j.kategori] || []).push(j); });
     Object.keys(kat).forEach((k) => F.id_jenis.appendChild(h('optgroup', { label: k }, kat[k].map((j) => h('option', { value: j.id, title: j.uraian }, labelJenis(j))))));
     kolom('no_bukti_uji', 'input', { placeholder: 'Nomor bukti uji (dari dokumen fisik)', maxlength: 40 }); kolom('masa_berlaku_uji', 'input', { type: 'date' });
