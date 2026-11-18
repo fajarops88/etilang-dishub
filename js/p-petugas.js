@@ -13,7 +13,7 @@
         h('div', { class: 'flex items-center justify-between gap-2 flex-wrap' }, ETL.plat(d.nopol), h('span', { class: d.jumlah ? 'text-label-md' : 'text-label-md text-on-surface-variant', style: { color: d.jumlah ? '#ba1a1a' : undefined } }, d.jumlah ? d.jumlah + ' riwayat tercatat' : 'Belum ada riwayat')),
         d.riwayat.map((r) => h('a', { class: 'kartu mt-2 block', style: { padding: '.65rem .8rem', textDecoration: 'none', color: 'inherit' }, href: ETL.href('kasus', r.id) },
           h('div', { class: 'flex items-center justify-between gap-2' }, h('span', { class: 'text-label-md text-on-surface-variant' }, ETL.waktu(r.waktu)), ETL.lencana(r.status)),
-          h('div', { class: 'font-semibold text-primary', style: { fontSize: '.92rem' } }, r.nama_jenis), h('div', { class: 'flex items-center gap-1 text-body-sm text-on-surface-variant' }, ETL.ikon('pin', 14), r.lokasi || '–'))),
+          h('div', { class: 'font-semibold text-primary', style: { fontSize: '.88rem' } }, r.nama_jenis), h('div', { class: 'flex items-center gap-1 text-body-sm text-on-surface-variant' }, ETL.ikon('pin', 14), r.lokasi || '–'))),
         h('div', { class: 'flex items-center gap-2 text-body-sm text-on-surface-variant mt-2' }, ETL.ikon('basisData', 16), d.catatan)));
       return d;
     } catch (e) { ETL.kosong(wadah); wadah.appendChild(h('div', { class: 'bahaya-kotak' }, e.pesan || 'Gagal memeriksa riwayat.')); }
@@ -58,7 +58,7 @@
   function kartuKasus(k) {
     return h('a', { href: ETL.href('kasus', k.id), class: 'kartu kartu-klik block', style: { textDecoration: 'none', color: 'inherit', padding: '.8rem' } },
       h('div', { class: 'flex items-center justify-between gap-2' }, ETL.plat(k.nopol), ETL.lencana(k.status)),
-      h('div', { class: 'font-semibold text-primary mt-2', style: { fontSize: '.92rem' } }, k.nama_jenis),
+      h('div', { class: 'font-semibold text-primary mt-2', style: { fontSize: '.88rem' } }, k.nama_jenis),
       h('div', { class: 'flex items-start justify-between gap-3 flex-wrap text-body-sm text-on-surface-variant mt-1' }, h('span', { class: 'flex items-center gap-1', style: { minWidth: 0, flex: '1 1 14rem' } }, ETL.ikon('pin', 14), h('span', null, k.lokasi || '–')), h('span', { style: { whiteSpace: 'nowrap' } }, ETL.waktu(k.waktu))));
   }
   ETL.kartuKasus = kartuKasus;
@@ -103,7 +103,7 @@
     kolom('merek_warna', 'input', { placeholder: 'Contoh: Hino / putih', maxlength: 80 }); kolom('nama_pemilik', 'input', { placeholder: 'Nama pengemudi atau pemilik', maxlength: 100 });
     kolom('no_wa', 'input', { placeholder: '0812xxxxxxxx', inputmode: 'tel', maxlength: 20 });
     F.izin_notif = h('input', { type: 'checkbox', id: 'f-izin' });
-    F.id_jenis = h('select', { class: 'select', id: 'f-jenis' }, h('option', { value: '' }, 'Pilih jenis pelanggaran'));
+    F.id_jenis = h('select', { class: 'select', id: 'f-jenis', style: { fontSize: '.88rem' } }, h('option', { value: '' }, 'Pilih jenis pelanggaran'));
     const labelJenis = ETL.labelJenis;
     const kat = {}; master.jenis.forEach((j) => { (kat[j.kategori] = kat[j.kategori] || []).push(j); });
     Object.keys(kat).forEach((k) => F.id_jenis.appendChild(h('optgroup', { label: k }, kat[k].map((j) => h('option', { value: j.id, title: j.uraian }, labelJenis(j))))));
@@ -147,6 +147,7 @@
       infoJenis.style.display = 'block';
       infoJenis.appendChild(h('div', { class: 'flex justify-between gap-2 items-center' }, h('span', { class: 'text-label-md text-on-surface-variant' }, 'Dasar hukum & ketentuan'), h('span', { class: 'badge badge-peran' }, 'Perda 7/2022')));
       infoJenis.appendChild(h('div', { class: 'font-semibold text-primary mt-1' }, j.pasal_perda));
+      if (j.uraian) infoJenis.appendChild(h('div', { class: 'text-body-sm mt-1' }, j.uraian));
       infoJenis.appendChild(h('div', { class: 'text-body-sm text-on-surface-variant mt-1' }, j.sanksi ? 'Dasar sanksi: ' + j.sanksi : 'Sanksi mengikuti ketentuan Perda (belum diisi admin).'));
       blokUji.style.display = j.perlu_bukti_uji === 'YA' ? 'block' : 'none'; ubahLabelFoto(j.perlu_bukti_uji === 'YA');
     }

@@ -162,6 +162,15 @@
   Object.assign(ETL, { h, kosong, ikon, simpan, lokal, tgl, waktu, bulanLabel, angka, formatNopol, plat, lencana, inisial, debounce, kurangGerak, toast, modal, konfirmasi,
     hitungNaik, munculSaatTergulir, skeleton, kosongState, salin, unduhCsv, parseWaktu, BLN_PANJANG });
   /** Label pendek untuk dropdown jenis pelanggaran: pasal ringkas + awal uraian (teks lengkap di atribut title). */
-  ETL.labelJenis = (j) => { const p = String(j.pasal_perda || '').replace(/^Perda Balikpapan 7\/2022\s*/, '').replace(/ ayat \((\d+)\)/g, '($1)').replace(/ huruf /g, '').replace(/ dan /g, ','), u = String(j.uraian || ''); return (p ? p + ' – ' : '') + (u.length > 42 ? u.slice(0, 41) + '…' : u); };
+  // Label ringkas untuk pilihan jenis pelanggaran: pasal dulu (selalu terbaca), uraian dipersingkat. Uraian lengkap tampil di kotak info setelah dipilih.
+  ETL.labelJenis = (j) => {
+    const BUANG = [/^Pengusaha\/pengemudi /i, /^Pengemudi\/penumpang kendaraan bermotor:\s*/i, /^Menaikkan\/membawa\/menurunkan barang:\s*/i, /^Pengemudi sepeda motor berbasis aplikasi\s*/i, /^Pengemudi angkutan kota\s*/i, /^Pengemudi /i];
+    const p = String(j.pasal_perda || '').replace(/^Perda Balikpapan 7\/2022\s*/, '').replace(/^Ps\.\s*/, 'Ps.').replace(/ ayat \((\d+)\)/g, '($1)').replace(/ huruf /g, '').replace(/ dan /g, ',');
+    let u = String(j.uraian || '').trim().replace(/sebelum\/sesudah/g, '±').replace(/ dalam jarak /, ' ');
+    for (const r of BUANG) { const v = u.replace(r, ''); if (v !== u && v.length >= 8) { u = v; break; } }
+    u = u.charAt(0).toUpperCase() + u.slice(1);
+    const sisa = Math.max(12, 32 - p.length); if (u.length > sisa) u = u.slice(0, sisa - 1).trimEnd() + '…';
+    return (p ? p + ' ' : '') + u;
+  };
 
 })();
