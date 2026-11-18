@@ -2,12 +2,12 @@
  * Tujuan: aplikasi dapat dipasang dan kerangkanya (HTML/CSS/JS/font/ikon) terbuka cepat, bahkan saat sinyal lemah.
  * TIDAK pernah menyimpan panggilan API (alamat Apps Script, lintas-origin) maupun foto/data kasus.
  * Setiap rilis: naikkan VERSI agar cache lama dibuang. */
-const VERSI = 'etl-v1.2.2';
+const VERSI = 'etl-v1.2.3';
 const CACHE = VERSI + '-shell';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest',
   'css/tailwind.css', 'css/app.css', 'vendor/leaflet.css', 'vendor/leaflet.js', 'vendor/qrcode.js',
-  'js/config.js', 'js/icons.js', 'js/util.js', 'js/api.js', 'js/charts.js', 'js/app.js', 'js/pwa.js',
+  'js/config.js', 'js/icons.js', 'js/util.js', 'js/versi.js', 'js/api.js', 'js/charts.js', 'js/app.js', 'js/pwa.js',
   'js/p-publik.js', 'js/p-petugas.js', 'js/p-kasus.js', 'js/p-laporan.js', 'js/p-admin.js', 'js/p-wa-crm.js',
   'assets/inter-latin.woff2', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon.svg'
 ];

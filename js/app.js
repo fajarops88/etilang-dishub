@@ -63,6 +63,23 @@
     else isi = h('div', { class: 'text-body-sm' }, 'Untuk memasang: buka menu peramban (tiga titik), lalu pilih "Pasang aplikasi" atau "Tambahkan ke layar utama". Pastikan memakai Chrome.');
     return h('div', { class: 'kartu', style: { boxShadow: 'none', background: 'var(--surface-low)' } }, h('div', { class: 'font-semibold text-primary mb-1' }, 'Aplikasi di layar utama'), isi, baru);
   }
+  /** Versi aplikasi (berkas di GitHub) dan versi server (Apps Script); bedanya menandakan salah satunya belum diperbarui. */
+  function kartuVersi() {
+    const info = h('div', { class: 'text-body-sm text-on-surface-variant' }, 'Server: memeriksa...');
+    const kotak = h('div', { class: 'kartu', style: { boxShadow: 'none', background: 'var(--surface-low)' } }, h('div', { class: 'font-semibold text-primary mb-1' }, 'Versi sistem'), h('div', { class: 'text-body-sm' }, 'Aplikasi: v' + ETL.VERSI), info);
+    ETL.api('ping', {}, { ulang: false, timeout: 8000 }).then((d) => {
+      const sv = d && d.versi ? String(d.versi) : '';
+      info.textContent = 'Server: v' + (sv || '?');
+      if (sv && sv !== ETL.VERSI) kotak.appendChild(h('div', { class: 'peringatan mt-2' }, 'Versi aplikasi dan server berbeda. Beri tahu Admin: salah satunya belum diperbarui.'));
+    }).catch(() => { info.textContent = 'Server: tidak terjangkau saat ini.'; });
+    return kotak;
+  }
+  function riwayatVersi() {
+    ETL.modal({ judul: 'Riwayat versi', lebar: 'lebar', isi: ETL.RIWAYAT.map((r) => h('div', { class: 'kartu', style: { boxShadow: 'none', background: 'var(--surface-low)' } },
+      h('div', { class: 'flex justify-between gap-2 items-center' }, h('div', { class: 'font-semibold text-primary' }, 'v' + r.v + ' • ' + r.judul), h('span', { class: 'badge badge-peran' }, r.dampak)),
+      h('div', { class: 'text-body-sm text-on-surface-variant' }, r.tanggal || 'tanggal tidak tercatat'),
+      h('ul', { class: 'text-body-sm', style: { paddingLeft: '1.1rem', marginTop: '.3rem', listStyle: 'disc' } }, r.perubahan.map((x) => h('li', null, x))))), tombol: [{ teks: 'Tutup', kelas: 'btn-sekunder' }] });
+  }
   function akunModal() {
     const p = ETL.sesi.profil();
     ETL.modal({ judul: 'Akun saya', isi: [
@@ -70,8 +87,9 @@
         h('div', null, h('div', { class: 'text-headline-sm text-primary' }, p.nama), h('div', { class: 'text-body-sm text-on-surface-variant' }, [p.jabatan, p.nip && 'NIP ' + p.nip].filter(Boolean).join(' • ')),
           h('span', { class: 'badge badge-peran mt-1' }, p.peran === 'Admin' ? 'Admin Sistem' : p.peran === 'Pimpinan' ? 'Pimpinan' : 'Petugas Lapangan'))),
       h('div', { class: 'info-kotak' }, 'Sesi berlaku maksimal 6 jam. Jangan membagikan PIN Anda kepada siapa pun.'),
-      kartuPasang()
+      kartuPasang(), kartuVersi()
     ].filter(Boolean), tombol: [
+      { teks: 'Riwayat versi', kelas: 'btn-sekunder', onClick: () => { riwayatVersi(); return false; } },
       { teks: 'Ganti PIN', kelas: 'btn-sekunder', onClick: () => { location.hash = '#/ganti-pin'; } },
       { teks: 'Keluar', kelas: 'btn-bahaya', onClick: async () => { await keluar(); } }
     ] });
