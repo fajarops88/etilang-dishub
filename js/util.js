@@ -162,15 +162,32 @@
   Object.assign(ETL, { h, kosong, ikon, simpan, lokal, tgl, waktu, bulanLabel, angka, formatNopol, plat, lencana, inisial, debounce, kurangGerak, toast, modal, konfirmasi,
     hitungNaik, munculSaatTergulir, skeleton, kosongState, salin, unduhCsv, parseWaktu, BLN_PANJANG });
   /** Label pendek untuk dropdown jenis pelanggaran: pasal ringkas + awal uraian (teks lengkap di atribut title). */
-  // Label ringkas untuk pilihan jenis pelanggaran: pasal dulu (selalu terbaca), uraian dipersingkat. Uraian lengkap tampil di kotak info setelah dipilih.
+  // Cadangan nama singkat bila kolom nama_singkat di master masih kosong; pasal yang tidak terdaftar memakai potongan otomatis dari uraian.
+  ETL.NAMA_SINGKAT = {
+    'Ps.57(1)a': 'Jln nasional/provinsi', 'Ps.57(1)b': 'Tanpa rambu/marka', 'Ps.57(1)c': '±15 m rambu larangan', 'Ps.57(1)d': '±6 m penyeberangan',
+    'Ps.57(1)e': '±25 m tikungan tajam', 'Ps.57(1)f': '±50 m jembatan', 'Ps.57(1)g': '±100 m perlintasan', 'Ps.57(1)h': '±25 m persimpangan', 'Ps.57(1)i': '±6 m hidran',
+    'Ps.57(2)': 'Bukan tempat parkir', 'Ps.57(3)': 'Merintangi lalu lintas', 'Ps.60(1)': 'Simpan di rumija', 'Ps.72': 'Parkir/muat di rumaja',
+    'Ps.96(1)': 'Tanpa uji berkala', 'Ps.101(1)': 'Telat uji berkala',
+    'Ps.134(1)': 'Angkot: perlengkapan', 'Ps.134(2)': 'Angkot: seragam sopir', 'Ps.134(3)a': 'Angkot: stop terlarang', 'Ps.134(3)b': 'Naik/turun salah titik', 'Ps.134(3)c': 'Angkot: overload', 'Ps.134(3)d': 'Sopir HP/rokok/alkohol',
+    'Ps.139(1)': 'Taksi: perlengkapan', 'Ps.151(4)': 'Kaca film angkot/taksi', 'Ps.148(1)': 'Truk: jam/jalur lintas', 'Ps.75(2)': 'Jalan tak sesuai kelas',
+    'Ps.149(1)a': 'Bongkar muat ganggu', 'Ps.149(1)b': 'Curah tanpa terpal', 'Ps.149(1)c': 'Mixer tanpa penutup', 'Ps.149(1)d': 'Muatan tak seimbang', 'Ps.149(1)e': 'Menonjol belakang >2 m',
+    'Ps.149(1)f': 'Menonjol >1 m (lampu)', 'Ps.149(1)g': 'Muatan halangi lampu', 'Ps.149(1)h': 'Dimensi melebihi batas', 'Ps.149(1)i': 'Angkut B3 tanpa syarat',
+    'Ps.141(3)a-e,i': 'Syarat ojol', 'Ps.93(1)': 'Mengemudi tidak wajar', 'Ps.93(2)': 'Aktivitas ganggu fokus',
+    'Ps.94a': 'Bawa senjata tajam', 'Ps.94b': 'Mabuk/obat terlarang', 'Ps.94c': 'Bising: tape/klakson', 'Ps.94d': 'HP saat mengemudi', 'Ps.94e': 'Buang sampah di jalan', 'Ps.94f': 'Merokok di kendaraan', 'Ps.94g': 'Bicara dg sopir lain',
+    'Ps.66(1)': 'Tak dahulukan prioritas', 'Ps.67(3)': 'Umum: salah tempat henti'
+  };
+  // Label ringkas untuk pilihan jenis pelanggaran: pasal dulu (selalu terbaca) + nama singkat. Uraian lengkap tampil di kotak info setelah dipilih.
   ETL.labelJenis = (j) => {
     const BUANG = [/^Pengusaha\/pengemudi /i, /^Pengemudi\/penumpang kendaraan bermotor:\s*/i, /^Menaikkan\/membawa\/menurunkan barang:\s*/i, /^Pengemudi sepeda motor berbasis aplikasi\s*/i, /^Pengemudi angkutan kota\s*/i, /^Pengemudi /i];
     const p = String(j.pasal_perda || '').replace(/^Perda Balikpapan 7\/2022\s*/, '').replace(/^Ps\.\s*/, 'Ps.').replace(/ ayat \((\d+)\)/g, '($1)').replace(/ huruf /g, '').replace(/ dan /g, ',');
+    const nama = String(j.nama_singkat || '').trim() || ETL.NAMA_SINGKAT[p];
+    if (nama) return p + ' ' + nama;
     let u = String(j.uraian || '').trim().replace(/sebelum\/sesudah/g, '±').replace(/ dalam jarak /, ' ');
     for (const r of BUANG) { const v = u.replace(r, ''); if (v !== u && v.length >= 8) { u = v; break; } }
     u = u.charAt(0).toUpperCase() + u.slice(1);
     const sisa = Math.max(12, 32 - p.length); if (u.length > sisa) u = u.slice(0, sisa - 1).trimEnd() + '…';
     return (p ? p + ' ' : '') + u;
   };
+
 
 })();
